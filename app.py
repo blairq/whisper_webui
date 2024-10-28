@@ -499,7 +499,7 @@ class WhisperTranscriber:
 
 
 
-    def parse_srt_to_csv(srt_filename, csv_filename):
+    def parse_srt_to_csv(self, srt_filename, csv_filename):
         """
         Parses an SRT file and saves the data to a CSV file with the specified format,
         including the input SRT filename in a column at the beginning.
