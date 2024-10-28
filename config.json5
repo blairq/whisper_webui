@@ -73,32 +73,32 @@
     // The default implementation to use for Whisper. Can be "whisper" or "faster-whisper".
     // Note that you must either install the requirements for faster-whisper (requirements-fasterWhisper.txt) 
     // or whisper (requirements.txt)
-    "whisper_implementation": "whisper",
+    "whisper_implementation": "faster-whisper",
 
     // The default model name.
     "default_model_name": "medium",
     // The default VAD.
     "default_vad": "silero-vad",
     // A commma delimited list of CUDA devices to use for parallel processing. If None, disable parallel processing.
-    "vad_parallel_devices": "",
+    "vad_parallel_devices": "0",
     // The number of CPU cores to use for VAD pre-processing.
-    "vad_cpu_cores": 1,
+    "vad_cpu_cores": 0,
     // The number of seconds before inactivate processes are terminated. Use 0 to close processes immediately, or None for no timeout.
     "vad_process_timeout": 1800,
     // True to use all available GPUs and CPU cores for processing. Use vad_cpu_cores/vad_parallel_devices to specify the number of CPU cores/GPUs to use.
-    "auto_parallel": false,
+    "auto_parallel": true,
     // Directory to save the outputs (CLI will use the current directory if not specified)
     "output_dir": null,
     // The path to save model files; uses ~/.cache/whisper by default
     "model_dir": null,
     // Device to use for PyTorch inference, or Null to use the default device
-    "device": null,
+    "device": "0",
     // Whether to print out the progress and debug messages
     "verbose": true,
     // Whether to perform X->X speech recognition ('transcribe') or X->English translation ('translate')
     "task": "transcribe",
     // Language spoken in the audio, specify None to perform language detection
-    "language": null,
+    "language": "spanish",
     // The window size (in seconds) to merge voice segments
     "vad_merge_window": 5,
     // The maximum size (in seconds) of a voice segment
@@ -148,15 +148,15 @@
     "highlight_words": false,
 
     // Diarization settings
-    "auth_token": null,
+    "auth_token": "",
     // Whether to perform speaker diarization
-    "diarization": false,
+    "diarization": true,
     // The number of speakers to detect
     "diarization_speakers": 2,
     // The minimum number of speakers to detect
     "diarization_min_speakers": 1,
     // The maximum number of speakers to detect
-    "diarization_max_speakers": 8,
+    "diarization_max_speakers": 50,
     // The number of seconds before inactivate processes are terminated. Use 0 to close processes immediately, or None for no timeout.
     "diarization_process_timeout": 60,
 }
