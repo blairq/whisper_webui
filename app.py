@@ -11,6 +11,9 @@ import tempfile
 import zipfile
 import numpy as np
 
+import re
+import csv
+
 import torch
 
 from src.config import VAD_INITIAL_PROMPT_MODE_VALUES, ApplicationConfig, VadInitialPromptMode
@@ -493,6 +496,47 @@ class WhisperTranscriber:
 
         return config
 
+
+
+
+    def parse_srt_to_csv(srt_filename, csv_filename):
+        """
+        Parses an SRT file and saves the data to a CSV file with the specified format,
+        including the input SRT filename in a column at the beginning.
+        """
+
+        with open(srt_filename, 'r', encoding='utf-8') as srt_file:
+            srt_content = srt_file.read()
+
+        subtitles = []
+        pattern = r"(\d+)\n(\d{2}:\d{2}:\d{2},\d{3}) --> (\d{2}:\d{2}:\d{2},\d{3})\n(.*?)\n\n"
+        matches = re.findall(pattern, srt_content, re.DOTALL)
+
+        for match in matches:
+            number = int(match[0])
+            timecode_start = match[1]
+            timecode_end = match[2]
+            text = match[3].strip()
+
+            # Extract speaker information
+            speaker_match = re.search(r"\((SPEAKER_\d+)\)", text)
+            speaker = speaker_match.group(1) if speaker_match else ""
+
+            # Remove speaker information from the text
+            text_without_speaker = re.sub(r"\((SPEAKER_\d+)\)\s*", "", text)
+
+            subtitles.append([srt_filename, number, timecode_start, timecode_end, speaker, text_without_speaker])
+
+        # Write to CSV file
+        with open(csv_filename, 'w', newline='', encoding='utf-8') as csvfile:
+            csv_writer = csv.writer(csvfile, delimiter=';')
+            csv_writer.writerow(["Filename", "Number", "Timecode Start", "Timecode End", "Speaker", "Text"])  # Write header
+            csv_writer.writerows(subtitles)
+
+    # Example usage:
+
+
+
     def write_result(self, result: dict, source_name: str, output_dir: str, highlight_words: bool = False):
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
@@ -516,6 +560,7 @@ class WhisperTranscriber:
         output_files.append(self.__create_file(text, output_dir, source_name + "-transcript.txt"));
         output_files.append(json_file)
 
+        self.parse_srt_to_csv( os.path.join(output_dir, source_name + "-subs.srt") , os.path.join( output_dir, source_name + "-subs.csv") )
         return output_files, text, vtt
 
     def clear_cache(self):
