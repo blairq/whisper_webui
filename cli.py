@@ -195,11 +195,11 @@ def cli():
 
             transcriber.write_result(result, source_name, output_dir, highlight_words)
 
-            directory_path = output_dir + "DONE"
+            directory_path = os.path.join(output_dir + "DONE")
             destination_path = os.path.join(directory_path, os.path.basename(source_name))
             try:
                 # Create the directory
-                os.makedirs(os.path.join())
+                os.makedirs(directory_path)
                 print(f"Directory '{directory_path}' created successfully!")
                 try:
                     shutil.move(source_name, destination_path)
