@@ -40,7 +40,7 @@ def cli():
                         help="whether to print out the progress and debug messages")
     parser.add_argument("--whisper_implementation", type=str, default=default_whisper_implementation, choices=["whisper", "faster-whisper"],\
                         help="the Whisper implementation to use")
-                        
+
     parser.add_argument("--task", type=str, default=app_config.task, choices=["transcribe", "translate"], \
                         help="whether to perform X->X speech recognition ('transcribe') or X->English translation ('translate')")
     parser.add_argument("--language", type=str, default=app_config.language, choices=sorted(get_language_names()), \
@@ -96,15 +96,15 @@ def cli():
     parser.add_argument("--no_speech_threshold", type=optional_float, default=app_config.no_speech_threshold, \
                         help="if the probability of the <|nospeech|> token is higher than this value AND the decoding has failed due to `logprob_threshold`, consider the segment as silence")
 
-    parser.add_argument("--word_timestamps", type=str2bool, default=app_config.word_timestamps, 
+    parser.add_argument("--word_timestamps", type=str2bool, default=app_config.word_timestamps,
                         help="(experimental) extract word-level timestamps and refine the results based on them")
-    parser.add_argument("--prepend_punctuations", type=str, default=app_config.prepend_punctuations, 
+    parser.add_argument("--prepend_punctuations", type=str, default=app_config.prepend_punctuations,
                         help="if word_timestamps is True, merge these punctuation symbols with the next word")
-    parser.add_argument("--append_punctuations", type=str, default=app_config.append_punctuations, 
+    parser.add_argument("--append_punctuations", type=str, default=app_config.append_punctuations,
                         help="if word_timestamps is True, merge these punctuation symbols with the previous word")
     parser.add_argument("--highlight_words", type=str2bool, default=app_config.highlight_words,
                         help="(requires --word_timestamps True) underline each word as it is spoken in srt and vtt")
-    parser.add_argument("--threads", type=optional_int, default=0, 
+    parser.add_argument("--threads", type=optional_int, default=0,
                         help="number of threads used by torch for CPU inference; supercedes MKL_NUM_THREADS/OMP_NUM_THREADS")
 
     # Diarization
@@ -147,7 +147,7 @@ def cli():
     vad_prompt_window = args.pop("vad_prompt_window")
     vad_cpu_cores = args.pop("vad_cpu_cores")
     auto_parallel = args.pop("auto_parallel")
-    
+
     compute_type = args.pop("compute_type")
     highlight_words = args.pop("highlight_words")
 
@@ -156,7 +156,7 @@ def cli():
     num_speakers = args.pop("diarization_num_speakers")
     min_speakers = args.pop("diarization_min_speakers")
     max_speakers = args.pop("diarization_max_speakers")
-    
+
     transcriber = WhisperTranscriber(delete_uploaded_files=False, vad_cpu_cores=vad_cpu_cores, app_config=app_config)
     transcriber.set_parallel_devices(args.pop("vad_parallel_devices"))
     transcriber.set_auto_parallel(auto_parallel)
@@ -164,9 +164,9 @@ def cli():
     if diarization:
         transcriber.set_diarization(auth_token=auth_token, enable_daemon_process=False, num_speakers=num_speakers, min_speakers=min_speakers, max_speakers=max_speakers)
 
-    model = create_whisper_container(whisper_implementation=whisper_implementation, model_name=model_name, 
+    model = create_whisper_container(whisper_implementation=whisper_implementation, model_name=model_name,
                                      device=device, compute_type=compute_type, download_root=model_dir, models=app_config.models)
-    
+
     if (transcriber._has_parallel_devices()):
         print("Using parallel devices:", transcriber.parallel_device_list)
 
@@ -180,17 +180,18 @@ def cli():
                 source_name = os.path.basename(source_path)
                 sources.append({ "path": source_path, "name": source_name })
         else:
-            sources.append({ "path": audio_path, "name": os.path.basename(audio_path) })
+            if audio_path.lower().endswith(".mp3") :
+                sources.append({ "path": audio_path, "name": os.path.basename(audio_path) })
 
         for source in sources:
             source_path = source["path"]
             source_name = source["name"]
 
-            vadOptions = VadOptions(vad, vad_merge_window, vad_max_merge_size, vad_padding, vad_prompt_window, 
+            vadOptions = VadOptions(vad, vad_merge_window, vad_max_merge_size, vad_padding, vad_prompt_window,
                                     VadInitialPromptMode.from_string(vad_initial_prompt_mode))
 
             result = transcriber.transcribe_file(model, source_path, temperature=temperature, vadOptions=vadOptions, **args)
-            
+
             transcriber.write_result(result, source_name, output_dir, highlight_words)
 
     transcriber.close()
