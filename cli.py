@@ -195,29 +195,33 @@ def cli():
 
             transcriber.write_result(result, source_name, output_dir, highlight_words)
 
-            directory_path = os.path.join(output_dir + "DONE")
-            destination_path = os.path.join(directory_path, os.path.basename(source_name))
+            directory_path = os.path.join(output_dir , "DONE")
+            source_full_path = os.path.join(output_dir,source_name)
+            destination_path = os.path.join(directory_path, source_name)
             try:
                 # Create the directory
                 os.makedirs(directory_path)
                 print(f"Directory '{directory_path}' created successfully!")
+
                 try:
-                    shutil.move(source_name, destination_path)
-                    print(f"File '{source_name}' moved to '{destination_path}' successfully!")
+                    shutil.move(source_full_path, destination_path)
+                    print(f"File '{source_full_path}' moved to '{destination_path}' successfully!")
                 except FileNotFoundError:
-                    print(f"Source file '{source_name}' not found.")
+                    print(f"Source file '{source_full_path}' not found.")
                 except shutil.Error as e:
-                    print(f"Error moving file '{source_name}': {e}")
+                    print(f"Error moving file '{source_full_path}': {e}")
 
             except FileExistsError:
                 print(f"Directory '{directory_path}' already exists.")
+
                 try:
-                    shutil.move(source_name, destination_path)
-                    print(f"File '{source_name}' moved to '{destination_path}' successfully!")
+                    shutil.move(source_full_path, destination_path)
+                    print(f"File '{source_full_path}' moved to '{destination_path}' successfully!")
                 except FileNotFoundError:
-                    print(f"Source file '{source_name}' not found.")
+                    print(f"Source file '{source_full_path}' not found.")
                 except shutil.Error as e:
-                    print(f"Error moving file '{source_name}': {e}")
+                    print(f"Error moving file '{source_full_path}': {e}")
+
             except OSError as e:
                 print(f"Error creating directory '{directory_path}': {e}")
     transcriber.close()
