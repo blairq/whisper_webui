@@ -4,6 +4,7 @@ import pathlib
 from urllib.parse import urlparse
 import warnings
 import numpy as np
+import shutil
 
 import torch
 from app import VadOptions, WhisperTranscriber
@@ -194,6 +195,31 @@ def cli():
 
             transcriber.write_result(result, source_name, output_dir, highlight_words)
 
+            directory_path = output_dir + "DONE"
+            destination_path = os.path.join(directory_path, os.path.basename(source_name))
+            try:
+                # Create the directory
+                os.makedirs(os.path.join())
+                print(f"Directory '{directory_path}' created successfully!")
+                try:
+                    shutil.move(source_name, destination_path)
+                    print(f"File '{source_name}' moved to '{destination_path}' successfully!")
+                except FileNotFoundError:
+                    print(f"Source file '{source_name}' not found.")
+                except shutil.Error as e:
+                    print(f"Error moving file '{source_name}': {e}")
+
+            except FileExistsError:
+                print(f"Directory '{directory_path}' already exists.")
+                try:
+                    shutil.move(source_name, destination_path)
+                    print(f"File '{source_name}' moved to '{destination_path}' successfully!")
+                except FileNotFoundError:
+                    print(f"Source file '{source_name}' not found.")
+                except shutil.Error as e:
+                    print(f"Error moving file '{source_name}': {e}")
+            except OSError as e:
+                print(f"Error creating directory '{directory_path}': {e}")
     transcriber.close()
 
 def uri_validator(x):
