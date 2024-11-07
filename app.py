@@ -71,6 +71,7 @@ class WhisperTranscriber:
         self.gpu_parallel_context = None
         self.cpu_parallel_context = None
         self.vad_process_timeout = vad_process_timeout
+        print("----- vad process timeout --- %s" % self.vad_process_timeout)
         self.vad_cpu_cores = vad_cpu_cores
 
         self.vad_model = None
@@ -80,10 +81,11 @@ class WhisperTranscriber:
 
         # Support for diarization
         self.diarization: DiarizationContainer = None
+        self.embeddings = None
         # Dictionary with parameters to pass to diarization.run - if None, diarization is not enabled
         self.diarization_kwargs = None
         self.app_config = app_config
-
+      
     def set_parallel_devices(self, vad_parallel_devices: str):
         self.parallel_device_list = [ device.strip() for device in vad_parallel_devices.split(",") ] if vad_parallel_devices else None
 
@@ -96,6 +98,7 @@ class WhisperTranscriber:
             print("[Auto parallel] Using GPU devices " + str(self.parallel_device_list) + " and " + str(self.vad_cpu_cores) + " CPU cores for VAD/transcription.")
 
     def set_diarization(self, auth_token: str, enable_daemon_process: bool = True, **kwargs):
+        print(" diorization process timeout : %s"  % self.app_config.diarization_process_timeout)
         if self.diarization is None:
             self.diarization = DiarizationContainer(auth_token=auth_token, enable_daemon_process=enable_daemon_process,
                                                     auto_cleanup_timeout_seconds=self.app_config.diarization_process_timeout,
@@ -417,7 +420,7 @@ class WhisperTranscriber:
     def _handle_diarization(self, audio_path: str, input: dict):
         if self.diarization and self.diarization_kwargs:
             print("Diarizing ", audio_path)
-            diarization_result = list(self.diarization.run(audio_path, **self.diarization_kwargs))
+            diarization_result, embeddings = self.diarization.run(audio_path, **self.diarization_kwargs)
 
             # Print result
             print("Diarization result: ")
@@ -426,7 +429,7 @@ class WhisperTranscriber:
 
             # Add speakers to result
             input = self.diarization.mark_speakers(diarization_result, input)
-
+            self.embeddings = embeddings
         return input
 
     def _create_progress_listener(self, progress: gr.Progress):
@@ -534,7 +537,12 @@ class WhisperTranscriber:
             csv_writer.writerows(subtitles)
 
     # Example usage:
-
+    def write_embeddings(self,embeddings_filename):
+        with open(embeddings_filename, 'w', newline='', encoding='utf-8') as csvfile:
+            writer = csv.writer(csvfile, delimiter=';')
+            writer.writerow(["speakerID", "embedding"])  
+            for key, data in self.embeddings.items():
+                writer.writerow([key, data])
 
 
     def write_result(self, result: dict, source_name: str, output_dir: str, highlight_words: bool = False):
@@ -561,6 +569,11 @@ class WhisperTranscriber:
         output_files.append(json_file)
 
         self.parse_srt_to_csv( os.path.join(output_dir, source_name + "-subs.srt") , os.path.join( output_dir, source_name + "-subs.csv") )
+        if self.embeddings is not None :
+            embeddings_filename = os.path.join(output_dir,source_name + "-subs-embeddings.csv")
+            print("writing embeddings file : " + embeddings_filename)
+            self.write_embeddings(embeddings_filename)
+
         return output_files, text, vtt
 
     def clear_cache(self):

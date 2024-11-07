@@ -33,6 +33,7 @@ class _ProgressListenerToQueue(ProgressListener):
 class ParallelContext:
     def __init__(self, num_processes: int = None, auto_cleanup_timeout_seconds: float = None):
         self.num_processes = num_processes
+        print(" auto cleanup timeout seconds : %s " % auto_cleanup_timeout_seconds)
         self.auto_cleanup_timeout_seconds = auto_cleanup_timeout_seconds
         self.lock = threading.Lock()
 

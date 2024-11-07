@@ -148,8 +148,10 @@ def cli():
     vad_prompt_window = args.pop("vad_prompt_window")
     vad_cpu_cores = args.pop("vad_cpu_cores")
     auto_parallel = args.pop("auto_parallel")
+    print("auto parallel config : %s"% auto_parallel)
 
     compute_type = args.pop("compute_type")
+    print("compute_type : %s"% compute_type)
     highlight_words = args.pop("highlight_words")
 
     auth_token = args.pop("auth_token")

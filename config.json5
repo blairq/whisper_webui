@@ -56,11 +56,11 @@
     // * WEBUI options *
 
     // Maximum audio file length in seconds, or -1 for no limit. Ignored by CLI.
-    "input_audio_max_duration": 600,
+    "input_audio_max_duration": -1,
     // True to share the app on HuggingFace.
     "share": false,
     // The host or IP to bind to. If None, bind to localhost.
-    "server_name": null,
+    "server_name": "None",
     // The port to bind to.
     "server_port": 7860,
     // The number of workers to use for the web server. Use -1 to disable queueing.
@@ -80,19 +80,19 @@
     // The default VAD.
     "default_vad": "silero-vad",
     // A commma delimited list of CUDA devices to use for parallel processing. If None, disable parallel processing.
-    "vad_parallel_devices": "0",
+    "vad_parallel_devices": "3,4,5",
     // The number of CPU cores to use for VAD pre-processing.
-    "vad_cpu_cores": 0,
+    "vad_cpu_cores": 4,
     // The number of seconds before inactivate processes are terminated. Use 0 to close processes immediately, or None for no timeout.
-    "vad_process_timeout": 1800,
+    "vad_process_timeout": "None",
     // True to use all available GPUs and CPU cores for processing. Use vad_cpu_cores/vad_parallel_devices to specify the number of CPU cores/GPUs to use.
-    "auto_parallel": true,
+    "auto_parallel": null,
     // Directory to save the outputs (CLI will use the current directory if not specified)
-    "output_dir": null,
+    "output_dir":  null,
     // The path to save model files; uses ~/.cache/whisper by default
     "model_dir": null,
     // Device to use for PyTorch inference, or Null to use the default device
-    "device": "0",
+    "device": null,
     // Whether to print out the progress and debug messages
     "verbose": true,
     // Whether to perform X->X speech recognition ('transcribe') or X->English translation ('translate')
@@ -128,7 +128,7 @@
     // Whether to perform inference in fp16; True by default
     "fp16": true,
     // The compute type used by faster-whisper. Can be "int8". "int16" or "float16".
-    "compute_type": "auto",
+    "compute_type": "int8_float16",
     // Temperature to increase when falling back when the decoding fails to meet either of the thresholds below
     "temperature_increment_on_fallback": 0.2,
     // If the gzip compression ratio is higher than this value, treat the decoding as failed
@@ -148,15 +148,15 @@
     "highlight_words": false,
 
     // Diarization settings
-    "auth_token": "",
+    "auth_token": "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",
     // Whether to perform speaker diarization
     "diarization": true,
     // The number of speakers to detect
-    "diarization_speakers": 2,
+    "diarization_speakers": null,
     // The minimum number of speakers to detect
     "diarization_min_speakers": 1,
     // The maximum number of speakers to detect
-    "diarization_max_speakers": 50,
+    "diarization_max_speakers": 45,
     // The number of seconds before inactivate processes are terminated. Use 0 to close processes immediately, or None for no timeout.
-    "diarization_process_timeout": 60,
+    "diarization_process_timeout": "None",
 }

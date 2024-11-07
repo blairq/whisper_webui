@@ -6,11 +6,16 @@ from pathlib import Path
 import tempfile
 from typing import TYPE_CHECKING, List
 import torch
+import torchaudio
+
+from pyannote.audio import Audio
+import time
+from pyannote.audio.pipelines.utils.hook import ProgressHook
 
 import ffmpeg
 
 class DiarizationEntry:
-    def __init__(self, start, end, speaker):
+    def __init__(self, start, end, speaker ):
         self.start = start
         self.end = end
         self.speaker = speaker
@@ -24,6 +29,11 @@ class DiarizationEntry:
             "end": self.end,
             "speaker": self.speaker
         }
+
+class PrintHook(ProgressHook):
+    def __call__(self, step_name, step_artifact):
+        super().__call__(step_name, step_artifact)
+        print(f"Dia Completed step: {step_name}")
 
 class Diarization:
     def __init__(self, auth_token=None):
@@ -75,16 +85,56 @@ class Diarization:
                 ffmpeg.input(audio_file).output(target_file, ac=1).run()
             except ffmpeg.Error as e:
                 print(f"Error occurred during audio conversion: {e.stderr}")
+        
+        target_sample_rate = 16000
+        # Load and resample audio
+        print(f"downsampling audio")
+        io = Audio(mono='downmix', sample_rate=target_sample_rate)
+        resampled_waveform, sample_rate = io(target_file)
 
-        diarization = self.pipeline(target_file, **kwargs)
+        print(f"{target_file} loaded, starting diarization")
+
+        before_segmentation = time.time()
+
+        audio_filew = {"waveform": resampled_waveform, "sample_rate": target_sample_rate}
+
+        with ProgressHook() as hook:
+            diarization, embeddings = self.pipeline(audio_filew,**kwargs , return_embeddings=True, hook=hook)
+
+        print(f"Segmentation and embedding extraction took {time.time() - before_segmentation:.2f}s")
+        #for s, speaker in enumerate(diarization.labels()):
+        #    print("-- %s :" % s)
+        #    print("-- speaker %s :" % speaker)
+        #    print("--- embedding : ---" + np.array2string(embeddings[s], separator=',') )
+        #for i, centroid in enumerate(embeddings):
+        #    centroid_str = np.array2string(centroid, separator=',')
+        #    print(f"Centroid {i}: {centroid_str}")
+
+
+        import numpy as np
+        embeddings_dict = {}
+        for i, centroid in enumerate(embeddings):
+            speaker_id = f"SPEAKER_{i:02d}"
+            centroid_str = np.array2string(centroid, separator=',')
+            embeddings_dict[speaker_id] = centroid_str
+
+        #waveform, sample_rate = torchaudio.load(target_file)
+        #audio_filew = {"waveform": waveform, "sample_rate": sample_rate}
+
+        #diarization = self.pipeline(audio_filew, **kwargs)
 
         if target_file != audio_file:
             # Delete temp file
             os.remove(target_file)
 
         # Yield result
+        diarization_entries = []
+
         for turn, _, speaker in diarization.itertracks(yield_label=True):
-            yield DiarizationEntry(turn.start, turn.end, speaker)
+            diarization_entries.append( DiarizationEntry(turn.start, turn.end, speaker ) )
+            #yield DiarizationEntry(turn.start, turn.end, speaker )
+
+        return diarization_entries, embeddings_dict
     
     def mark_speakers(self, diarization_result: List[DiarizationEntry], whisper_result: dict):
         from intervaltree import IntervalTree
@@ -168,7 +218,7 @@ def main():
     whisper_result = load_transcript(args.whisper_file)
 
     diarization = Diarization(auth_token=args.auth_token)
-    diarization_result = list(diarization.run(args.audio_file, num_speakers=args.num_speakers, min_speakers=args.min_speakers, max_speakers=args.max_speakers))
+    diarization_result, embeddings = diarization.run(args.audio_file, num_speakers=args.num_speakers, min_speakers=args.min_speakers, max_speakers=args.max_speakers)
 
     # Print result
     print("Diarization result:")
