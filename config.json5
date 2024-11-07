@@ -76,7 +76,7 @@
     "whisper_implementation": "faster-whisper",
 
     // The default model name.
-    "default_model_name": "medium",
+    "default_model_name": "large-v2",
     // The default VAD.
     "default_vad": "silero-vad",
     // A commma delimited list of CUDA devices to use for parallel processing. If None, disable parallel processing.

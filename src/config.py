@@ -47,36 +47,36 @@ class VadInitialPromptMode(Enum):
             return None
 
 class ApplicationConfig:
-    def __init__(self, models: List[ModelConfig] = [], input_audio_max_duration: int = 600, 
-                 share: bool = False, server_name: str = None, server_port: int = 7860, 
+    def __init__(self, models: List[ModelConfig] = [], input_audio_max_duration: int = 600,
+                 share: bool = False, server_name: str = None, server_port: int = 7860,
                  queue_concurrency_count: int = 1, delete_uploaded_files: bool = True,
-                 whisper_implementation: str = "whisper",
-                 default_model_name: str = "medium", default_vad: str = "silero-vad", 
-                 vad_parallel_devices: str = "", vad_cpu_cores: int = 1, vad_process_timeout: int = 1800, 
+                 whisper_implementation: str = "faster-whisper",
+                 default_model_name: str = "medium", default_vad: str = "silero-vad",
+                 vad_parallel_devices: str = "", vad_cpu_cores: int = 1, vad_process_timeout: int = 1800,
                  auto_parallel: bool = False, output_dir: str = None,
-                 model_dir: str = None, device: str = None, 
+                 model_dir: str = None, device: str = None,
                  verbose: bool = True, task: str = "transcribe", language: str = None,
-                 vad_initial_prompt_mode: str = "prepend_first_segment ", 
+                 vad_initial_prompt_mode: str = "prepend_first_segment ",
                  vad_merge_window: float = 5, vad_max_merge_size: float = 30,
                  vad_padding: float = 1, vad_prompt_window: float = 3,
                  temperature: float = 0, best_of: int = 5, beam_size: int = 5,
                  patience: float = None, length_penalty: float = None,
                  suppress_tokens: str = "-1", initial_prompt: str = None,
                  condition_on_previous_text: bool = True, fp16: bool = True,
-                 compute_type: str = "float16", 
+                 compute_type: str = "float16",
                  temperature_increment_on_fallback: float = 0.2, compression_ratio_threshold: float = 2.4,
                  logprob_threshold: float = -1.0, no_speech_threshold: float = 0.6,
                  # Word timestamp settings
                  word_timestamps: bool = False, prepend_punctuations: str = "\"\'“¿([{-",
-                 append_punctuations: str = "\"\'.。,，!！?？:：”)]}、", 
+                 append_punctuations: str = "\"\'.。,，!！?？:：”)]}、",
                  highlight_words: bool = False,
                  # Diarization
-                 auth_token: str = None, diarization: bool = False, diarization_speakers: int = 2,
-                 diarization_min_speakers: int = 1, diarization_max_speakers: int = 5,
+                 auth_token: str = None, diarization: bool = True, diarization_speakers: int = 2,
+                 diarization_min_speakers: int = 1, diarization_max_speakers: int = 55,
                  diarization_process_timeout: int = 60):
-        
+
         self.models = models
-        
+
         # WebUI settings
         self.input_audio_max_duration = input_audio_max_duration
         self.share = share
@@ -118,13 +118,13 @@ class ApplicationConfig:
         self.compression_ratio_threshold = compression_ratio_threshold
         self.logprob_threshold = logprob_threshold
         self.no_speech_threshold = no_speech_threshold
-        
+
         # Word timestamp settings
         self.word_timestamps = word_timestamps
         self.prepend_punctuations = prepend_punctuations
         self.append_punctuations = append_punctuations
         self.highlight_words = highlight_words
-        
+
         # Diarization settings
         self.auth_token = auth_token
         self.diarization = diarization
